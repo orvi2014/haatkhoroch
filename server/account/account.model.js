@@ -10,29 +10,16 @@ const accountsSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    coverImage: {
+    userName: {
       type: String,
-      trim: true,
-    },
-    name: {
-      type: String,
-      trim: true,
       unique: true,
+      required: true,
     },
-    firstName: {
+    fullName: {
       type: String,
       trim: true,
       required: true,
-    },
-    lastName: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    position: {
-      type: String,
-      trim: true,
-      max: 32,
+      lowercase: true,
     },
     email: {
       type: String,
@@ -43,7 +30,6 @@ const accountsSchema = new mongoose.Schema(
     },
     birthDate: {
       type: Date,
-      required: true,
     },
     hash: String,
     salt: String,
@@ -51,16 +37,7 @@ const accountsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    role: {
-      type: String,
-      enum: ['guest', 'admin', 'company', 'user'],
-      default: 'user',
-    },
-    accountType: {
-      type: String,
-      enum: ['premium', 'normal'],
-      default: 'normal',
-    },
+
     contactNo: {
       type: String,
       required: false,
@@ -73,53 +50,103 @@ const accountsSchema = new mongoose.Schema(
     },
     // it must be empty
     // if null, it will create an duplicateError
-    secondaryEmail: {
-      type: String,
-      lowercase: true,
-      unique: false,
-      trim: true,
-    },
     bloodGroup: {
       type: String,
       enum: ['A+', 'A-', 'O+', 'O-', 'AB+', 'AB-', 'B+', 'B-'],
     },
-    location: {
+    transaction: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    currentOccuption: {
       type: String,
       trim: true,
     },
-    about: {
+    nidBirthCertificate: {
       type: String,
-      max: 250,
       trim: true,
     },
-    skillArea: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SkillArea',
-      },
-    ],
-    companies: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
-      },
-    ],
+    nameSchool: {
+      type: String,
+      trim: true,
+    },
+    schoolPassing: {
+      type: String,
+      trim: true,
+    },
+    schoolCgpa: {
+      type: String,
+      trim: true,
+    },
+    nameCollege: {
+      type: String,
+      trim: true,
+    },
+    collegePassing: {
+      type: String,
+      trim: true,
+    },
+    collegeCgpa: {
+      type: String,
+      trim: true,
+    },
+    nameUniversty: {
+      type: String,
+      trim: true,
+    },
+    universityPassing: {
+      type: String,
+      trim: true,
+    },
+    universityCgpa: {
+      type: String,
+      trim: true,
+    },
+    studentId: {
+      type: String,
+      trim: true,
+    },
+    flatNo: {
+      type: String,
+      trim: true,
+    },
+    street: {
+      type: String,
+      trim: true,
+    },
+    presentThana: {
+      type: String,
+      trim: true,
+    },
+    district:{
+      type: String,
+      trim: true,
+    },
+    village: {
+      type: String,
+      trim: true,
+    },
+    postOffice: {
+      type: String,
+      trim: true,
+    },
+    permanentThana:{
+      type: String,
+      trim: true,
+    },
     isAccountVerified: {
       type: Boolean,
       default: false,
     },
-    jobExperience: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Jobexperience',
-      },
-    ],
-    education: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Education',
-      },
-    ],
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
+    skill: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Skill',
+    }],
     version: {
       type: Number,
       default: 0,
@@ -128,10 +155,6 @@ const accountsSchema = new mongoose.Schema(
   {
     timestamps: true,
   },
-);
-accountsSchema.index(
-  { email: 1, secondaryEmail: 1 },
-  { unique: true },
 );
 accountsSchema.pre('save', function (next) {
   const account = this;
@@ -168,19 +191,6 @@ accountsSchema.methods.comparePassword = function (
   candidatePassword,
   cb,
 ) {
-  // promise based
-  // return new Promise((resolve, reject) =>
-  //   bcrypt.compare(
-  //     candidatePassword,
-  //     this.password,
-  //     (err, isMatch) => {
-  //       if (err) {
-  //         return reject(err);
-  //       }
-  //       return isMatch ? resolve(isMatch) : reject();
-  //     },
-  //   ),
-  // );
   // es5 style
   bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     if (err) {

@@ -16,8 +16,18 @@ const envVarsSchema = Joi.object({
       then: Joi.boolean().default(true),
       otherwise: Joi.boolean().default(false)
     }),
-  JWT_SECRET: Joi.string().required()
-    .description('JWT Secret required to sign'),
+    JWT_ACCESS_TOKEN: Joi.string()
+    .required()
+    .description('JWT Access token Secret required to sign'),
+  JWT_REFRESH_TOKEN: Joi.string()
+    .required()
+    .description('JWT Refresh token required to sign'),
+  JWT_EXPIRATION: Joi.string()
+    .required()
+    .description('JWT access token time expire'),
+  JWT_REFRESH_EXPIRATION: Joi.string()
+    .required()
+    .description('JWT refresh token expired'),
   MONGO_HOST: Joi.string().required()
     .description('Mongo DB host url'),
   MONGO_PORT: Joi.number()
@@ -52,8 +62,10 @@ if (error) {
 const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
-  mongooseDebug: envVars.MONGOOSE_DEBUG,
-  jwtSecret: envVars.JWT_SECRET,
+  accessTokenSecret: envVars.JWT_ACCESS_TOKEN,
+  refreshTokenSecret: envVars.JWT_REFRESH_TOKEN,
+  accessTokenExpire: envVars.JWT_EXPIRATION,
+  refreshTokenExpire: envVars.JWT_REFRESH_EXPIRATION,
   mongo: {
     host: envVars.MONGO_HOST,
     port: envVars.MONGO_PORT

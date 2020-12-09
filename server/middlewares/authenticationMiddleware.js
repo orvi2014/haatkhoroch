@@ -6,6 +6,7 @@ module.exports.authentication = (req, res, next) => {
     user,
     info,
   ) {
+    console.log(user);
     if (err) {
       return next(err);
     }
@@ -17,6 +18,12 @@ module.exports.authentication = (req, res, next) => {
     if (!user.isAccountVerified) {
       return sendErrorResponse(res, 401, 'VerificationError', {
         message: 'Your account is not verified yet',
+      });
+    };
+
+    if (!user.isPaid) {
+      return sendErrorResponse(res, 401, 'VerificationError', {
+        message: 'Payment is not clear yet',
       });
     }
     req.user = user; // Forward user information to the next middleware

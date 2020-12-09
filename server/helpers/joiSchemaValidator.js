@@ -1,11 +1,11 @@
+const Joi = require('joi');
 const _ = require('lodash');
 const {
   sendErrorResponse,
   sendJSONresponse,
 } = require('../helpers/jsonResponse');
 
-module.exports = (_schema, useJoiError = true) => {
-  const _useJoiError = _.isBoolean(useJoiError) && useJoiError;
+module.exports = (schema, property) => {
 
   // Joi validation options
   const _validationOptions = {
@@ -16,8 +16,9 @@ module.exports = (_schema, useJoiError = true) => {
 
   // return the validation middleware
   return (req, res, next) => {
-    _schema
-      .validate(req, _validationOptions)
+    console.log(req.body);
+    Joi
+      .validate(req[property], schema)
       .then((validatedChanges) => {
         req.body = validatedChanges.body;
         next();

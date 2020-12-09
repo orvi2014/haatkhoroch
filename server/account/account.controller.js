@@ -5,6 +5,9 @@ const config = require('../../config/config');
 const logger = require('../../config/winston');
 const client = require('../../index.redis');
 const {
+  signupValidation
+} = require('./account.validation');
+const {
   sendEmailForVerifyAccount,
   sendEmailForResetPassword,
 } = require('../services/email.services');
@@ -20,32 +23,35 @@ const {
 const { createSlug } = require('../helpers/SlugCreator');
 // create a new account for individual users
 const register = async (req, res, next) => {
-  const data = req.body;
-  if (!data.email || !data.password) {
-    return sendJSONresponse(res, 400, {
-      message: 'You must provide email and password.',
+ 
+  if (!req.is('application/json')) {
+    return sendErrorResponse(res, 406, 'contentTypeError', { reason: `Expects 'application/json'`});
+  };
+const data = req.body;
+const { error } = signupValidation(data);
+if (error){
+    return sendErrorResponse(res, 400, 'validationError',{
+         missingField: error.details[0].path,
+         message: error.details[0].message.replace(/['"]/g, ''),
     });
-  }
+};
   let name = '';
   await Account.countDocuments({
-    firstName: data.firstName,
-    lastName: data.lastName,
+    fullName: data.fullName,
   })
     .exec()
     .then((result) => {
-      let firstName = createSlug(data.firstName);
-      let lastName = createSlug(data.lastName);
+      let fullName = createSlug(data.fullName);
       let uniqueId = result + 1;
-      name = firstName + '-' + lastName + '-' + uniqueId;
+      name = fullName +'-'+ uniqueId;
     });
   let account = new Account({
     email: data.email,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    name: name,
-    contactNo: Date.now(),
+    fullName: data.fullName,
+    userName: name,
+    contactNo: data.contactNo,
     password: data.password,
-    birthDate: data.birthDate,
+    transaction: data.transaction,
   });
   await account
     .save()
@@ -56,11 +62,6 @@ const register = async (req, res, next) => {
         .update(token)
         .digest('hex');
       let verifyAccountTokenExpiration = Date.now() + 604800;
-
-      let pendingMember = await PendingMember.find({
-        email: account.email,
-      }).select('-__v -createdAt -updatedAt');
-
       sendEmailForVerifyAccount(
         user.firstName,
         user.lastName,
@@ -74,7 +75,7 @@ const register = async (req, res, next) => {
       );
       return sendJSONresponse(res, 201, {
         message: 'User created',
-        token: verifyToken,
+        verifyToken: verifyToken,
       });
     })
     .catch((err) => {
@@ -95,7 +96,7 @@ const login = async (req, res, next) => {
   try {
     const payLoad = {
       email: req.user.email,
-      name: req.user.name,
+      userName: req.user.userName,
       _id: req.user._id,
     };
     const accessToken = jwt.sign(payLoad, config.accessTokenSecret, {
@@ -108,14 +109,11 @@ const login = async (req, res, next) => {
         expiresIn: config.refreshTokenExpire,
       },
     );
-    let userObj = {};
-    userObj.name = req.user.name;
     // addUserDataIntoCache(req.user._id, req.user);
     return sendJSONresponse(res, 200, {
       success: true,
       accessToken: accessToken,
       refreshToken: refreshToken,
-      user: userObj,
     });
   } catch (error) {
     logger.error(`${error}`);
@@ -173,19 +171,6 @@ const getAccessTokenForVerifyAccount = async (req, res, next) => {
           { safe: true, upsert: true, new: true },
         ).exec();
         client.del(`verifyAccountToken:${req.params.token}`);
-        await setDocument(accountIndex, '_doc', {
-          mongo_id: user._id,
-          name: user.name,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        });
-
-        logger.info(
-          chalk.blueBright(
-            `ElasticSearch document added on ${accountIndex}`,
-          ),
-        );
         return sendJSONresponse(res, 200, {
           isAccountVerified: true,
           message: 'Account Verified Successfully',
