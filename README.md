@@ -21,3 +21,8 @@ npm install
 ```
 npm run server
 ```
+- Test suite
+ run the test suite via `npm run test`
+
+- Documentation 
+copy `index.js` from docs folder and paste it [here](https://editor.swagger.io/)
