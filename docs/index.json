@@ -1,0 +1,228 @@
+openapi: 3.0.0
+info:
+  description: This is an API documentation
+  version: 1.0.0-oas3
+  title: Sample Api
+  contact:
+    email: das.orvi@yahoo.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: product
+    description: ''
+  - name: User Auth
+    description: ''
+  - name: Team
+    description: ''
+paths:
+  /accounts/signup:
+    post:
+      tags:
+        - User Auth
+      summary: Login information about account
+      security:
+        - JWT: []
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signupRequest'
+      responses:
+        '201':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signupResponse'
+        '400':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signupValidationResponse'
+        '409':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/signupDuplicateResponse'
+  /accounts/login:
+    post:
+      tags:
+        - User Auth
+      summary: Login information about account
+      security:
+        - JWT: []
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/loginRequest'
+      responses:
+        '201':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/loginResponse'
+  /accounts/refresh:
+    post:
+      tags:
+        - User Auth
+      summary: refresh token information about account
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/refreshRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/refreshResponse'
+servers:
+  - url: 'http://192.168.8.103:4044/api/v1'
+  - url: 'https://betaback.haatkhoroch.co/api/v1'
+    description: Development server
+components:
+  securitySchemes:
+    JWT:
+      type: apiKey
+      name: Authorization
+      in: header
+  schemas:
+    signupRequest:
+      type: object
+      required:
+        - email
+        - password
+        - confirmPassword
+        - transaction
+        - fullName
+      properties:
+        email:
+          type: string
+          example: purbadasgupta66@gmail.com
+        password:
+          type: string
+          example: 'Purba12@#'
+        confirmPassword:
+          type: string
+          example: 'Purba12@#'
+        fullName:
+          type: string
+          example: 'Purba das'
+        transaction:
+          type: string
+          example: '123'
+    loginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: purbadasgupta66@gmail.com
+        password:
+          type: string
+          example: 'Purba12@#'
+    signupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'user created'
+        verifyToken:
+          type: string
+          example: '446e5aaa73902bf7df7e85e20c6225374a99fbc65f7b098b6ca215936417e5f7'
+    
+    signupValidationResponse:
+      type : object
+      properties:
+        status:
+          type: string
+          example: '400'
+        type:
+          type: string
+          example: 'ValidationError'
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              missingField:
+                type: string
+                example: email
+              message:
+                type: string
+                example: email is not allowed to be empty
+    signupDuplicateResponse:
+      type : object
+      properties:
+        status:
+          type: string
+          example: '409'
+        type:
+          type: string
+          example: 'DuplicateKeyError'
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+              message:
+                type: string
+                example: email already exists
+              
+          
+    loginResponse:
+      type: object
+      properties:
+        success:
+          type: string
+        user:
+          type: object
+          properties:
+            role:
+              type: string
+              example: user
+            firstName:
+              type: string
+              example: orvi
+    refreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: dfadfkdkakdfftrett
+    refreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: gfdsgsdgffdsggdsg
+        expires_in:
+          type: string
+          example: 1d
+        token_type:
+          type: string
+          example: bearer
+        refreshToken:
+          type: string
+          example: safdsfsffhgtgty
+
